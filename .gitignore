@@ -1,0 +1,12 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+venv/
+backend/data/raw_records.jsonl
+.DS_Store
+node_modules/
+
+# The built FAISS index IS committed on purpose (backend/data/index/) so a
+# fresh clone / deploy has a working index without re-downloading the HF
+# dataset and re-embedding at build time.

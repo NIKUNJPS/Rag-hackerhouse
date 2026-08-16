@@ -1,0 +1,8 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+.env
+.git/
+backend/data/raw_records.jsonl
+backend/eval/__pycache__/

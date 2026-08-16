@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: voice-rag-hh-goa
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: STT_PROVIDER
+        value: elevenlabs
+      - key: ELEVENLABS_API_KEY
+        sync: false
+      - key: SARVAM_API_KEY
+        sync: false
+      - key: LLM_PROVIDER
+        value: anthropic
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ANTHROPIC_MODEL
+        value: claude-haiku-4-5-20251001
+      - key: GROQ_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: EMBEDDING_MODEL
+        value: sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+      - key: VECTOR_INDEX_DIR
+        value: backend/data/index
+      - key: TOP_K
+        value: "5"
+      - key: OFFTOPIC_SIM_THRESHOLD
+        value: "0.28"
+      - key: GROUNDING_OVERLAP_THRESHOLD
+        value: "0.15"
+      - key: DATASET_NAME
+        value: ai4bharat/MSMARCO-XI
