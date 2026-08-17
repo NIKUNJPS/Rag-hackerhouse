@@ -1,3 +1,13 @@
+---
+title: Voice RAG HH Goa 2026
+emoji: 🎙️
+colorFrom: green
+colorTo: purple
+sdk: docker
+app_port: 8000
+pinned: false
+---
+
 # Voice RAG — HH Goa 2026, Shortlisting Task 2
 
 A voice-in, voice-answerable RAG pipeline: speak a question, it gets transcribed, retrieved against
