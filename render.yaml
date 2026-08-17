@@ -12,13 +12,17 @@ services:
       - key: SARVAM_API_KEY
         sync: false
       - key: LLM_PROVIDER
+        value: groq
+      - key: LLM_FALLBACK_PROVIDER
         value: anthropic
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: openai/gpt-oss-20b
       - key: ANTHROPIC_API_KEY
         sync: false
       - key: ANTHROPIC_MODEL
         value: claude-haiku-4-5-20251001
-      - key: GROQ_API_KEY
-        sync: false
       - key: OPENAI_API_KEY
         sync: false
       - key: EMBEDDING_MODEL
@@ -28,7 +32,7 @@ services:
       - key: TOP_K
         value: "5"
       - key: OFFTOPIC_SIM_THRESHOLD
-        value: "0.28"
+        value: "0.38"
       - key: GROUNDING_OVERLAP_THRESHOLD
         value: "0.15"
       - key: DATASET_NAME
