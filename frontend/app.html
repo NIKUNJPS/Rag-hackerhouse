@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Voice RAG — HH Goa 2026</title>
+<meta name="description" content="A voice-enabled RAG pipeline built for the HH Goa 2026 shortlisting task." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%2305070a'/%3E%3Ctext x='50' y='68' font-size='58' text-anchor='middle' fill='%2339ff88' font-family='monospace'%3E%3E_%3C/text%3E%3C/svg%3E" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <header class="top">
+    <div class="wrap top-inner">
+      <a href="index.html" class="brand" style="text-decoration:none;color:inherit;">
+        <span class="brand-mark">&gt;_</span>
+        <div class="brand-text">
+          <span class="brand-title">VOICE RAG</span>
+          <span class="brand-sub">HH GOA 2026 · Shortlisting Task 2</span>
+        </div>
+      </a>
+      <div class="top-right">
+        <span id="apiDot" class="api-dot" title="Backend status"></span>
+        <span id="apiStatus" class="api-status">checking…</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <h1>Ask the dataset out loud.</h1>
+      <p class="lede">
+        Speech → transcription → vector retrieval → grounded answer. Every stage runs through a
+        harness with retries, timing, and guardrails — answers are refused, not guessed, when the
+        dataset doesn't cover a question.
+      </p>
+
+      <div class="input-row">
+        <button id="recordBtn" class="mic-btn" aria-pressed="false">
+          <span class="mic-ring"></span>
+          <svg class="mic-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Z" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M19 11a7 7 0 0 1-14 0M12 18v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          <span class="mic-label">Hold to talk</span>
+        </button>
+        <canvas id="waveform" width="240" height="56" class="waveform" aria-hidden="true"></canvas>
+      </div>
+
+      <form id="textForm" class="text-row">
+        <input id="textInput" type="text" placeholder="…or type a question and press Enter" autocomplete="off" />
+        <button type="submit" class="ask-btn">Ask</button>
+      </form>
+
+      <div class="chips">
+        <span class="chips-label">try:</span>
+        <button type="button" class="chip" data-query="क्या योग से मांसपेशियां बनती हैं?">grounded (Hindi, in-dataset)</button>
+        <button type="button" class="chip" data-query="What is the exchange rate of the Mars colonial dollar?">off-topic</button>
+        <button type="button" class="chip" data-query="how to hack a password">unsafe (blocked pre-retrieval)</button>
+      </div>
+
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="stages" id="stagesPanel" hidden aria-label="Pipeline stages">
+      <div class="stage" data-stage="stt">
+        <span class="stage-dot"></span><span class="stage-name">STT</span><span class="stage-ms"></span>
+      </div>
+      <div class="stage-arrow">→</div>
+      <div class="stage" data-stage="guardrail-in">
+        <span class="stage-dot"></span><span class="stage-name">Safety</span><span class="stage-ms">pre-check</span>
+      </div>
+      <div class="stage-arrow">→</div>
+      <div class="stage" data-stage="retrieval">
+        <span class="stage-dot"></span><span class="stage-name">Retrieval</span><span class="stage-ms"></span>
+      </div>
+      <div class="stage-arrow">→</div>
+      <div class="stage" data-stage="guardrail-topic">
+        <span class="stage-dot"></span><span class="stage-name">Grounding</span><span class="stage-ms">post-check</span>
+      </div>
+      <div class="stage-arrow">→</div>
+      <div class="stage" data-stage="generation">
+        <span class="stage-dot"></span><span class="stage-name">Generation</span><span class="stage-ms"></span>
+      </div>
+    </section>
+
+    <div class="results" id="results">
+      <section class="panel" id="transcriptPanel" hidden>
+        <h3>You asked</h3>
+        <p id="transcriptText"></p>
+      </section>
+
+      <section class="panel answer-panel" id="answerPanel" hidden>
+        <h3>Answer</h3>
+        <p id="answerText"></p>
+        <div id="badge" class="badge"></div>
+      </section>
+
+      <section class="panel" id="sourcesPanel" hidden>
+        <h3>Retrieved sources</h3>
+        <ol id="sourcesList" class="sources-list"></ol>
+      </section>
+
+      <section class="panel" id="latencyPanel" hidden>
+        <h3>Latency</h3>
+        <div id="latencyBar" class="latency-bar"></div>
+        <div id="latencyTarget" class="latency-target"></div>
+        <ul id="latencyList" class="latency-list"></ul>
+      </section>
+    </div>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap foot-inner">
+      <span>Built for <strong>HH Goa 2026</strong></span>
+      <span class="foot-tag">#RAGInGoa</span>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

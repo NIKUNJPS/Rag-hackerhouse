@@ -32,8 +32,17 @@ def run_benchmark(queries_path: str = "backend/eval/test_queries.json"):
     retriever = Retriever()
     orchestrator = Orchestrator(retriever=retriever, stt_provider=None)
 
+    # Mirrors backend/main.py's startup warm-up: a fresh LLM client pays a
+    # TLS-handshake tax on its first call. The deployed server eats that cost
+    # once at boot, not on a real user's request -- so the benchmark warms up
+    # here too, otherwise it'd report a cold-start number no real user sees.
+    try:
+        orchestrator.run(query="ping")
+    except Exception:
+        pass
+
     total_times = []
-    stage_times = {"retrieval": [], "generation": []}
+    stage_times = {"retrieval": [], "generation": [], "generation_ttft": []}
     statuses = {}
 
     for q in queries:
@@ -44,7 +53,7 @@ def run_benchmark(queries_path: str = "backend/eval/test_queries.json"):
             if t.stage in stage_times:
                 stage_times[t.stage].append(t.ms)
 
-    print(f"\nran {len(queries)} queries")
+    print(f"\nran {len(queries)} queries (after 1 warm-up call, not counted above)")
     print("status breakdown:", statuses)
     print("\nend-to-end latency (ms):")
     print(f"  P50:  {percentile(total_times, 50):.1f}")
@@ -54,7 +63,7 @@ def run_benchmark(queries_path: str = "backend/eval/test_queries.json"):
 
     for stage, times in stage_times.items():
         if times:
-            print(f"\n{stage} only (ms): P50={percentile(times,50):.1f}  P100={percentile(times,100):.1f}")
+            print(f"\n{stage} only (ms): P50={percentile(times,50):.1f}  P70={percentile(times,70):.1f}  P100={percentile(times,100):.1f}")
 
     return {
         "n": len(queries),

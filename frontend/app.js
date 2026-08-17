@@ -240,10 +240,15 @@ function renderLatency(data) {
   const byStage = {};
   timings.forEach((t) => { byStage[t.stage] = t.ms; });
 
+  // generation_ttft is a *subset* of generation's duration (time until the
+  // first chunk arrives, not an additional span) -- it's excluded from both
+  // the stacked-bar total and its own segment so the bar's proportions stay
+  // honest; it gets its own target line and list row instead.
   const bar = document.getElementById("latencyBar");
   bar.innerHTML = "";
-  const timedTotal = Object.values(byStage).reduce((a, b) => a + b, 0) || 1;
-  ["stt", "retrieval", "generation"].forEach((stage) => {
+  const BAR_STAGES = ["stt", "retrieval", "generation"];
+  const timedTotal = BAR_STAGES.reduce((sum, s) => sum + (byStage[s] || 0), 0) || 1;
+  BAR_STAGES.forEach((stage) => {
     if (byStage[stage] === undefined) return;
     const seg = document.createElement("div");
     seg.className = `latency-seg ${stage}`;
@@ -253,22 +258,40 @@ function renderLatency(data) {
   });
 
   const target = document.getElementById("latencyTarget");
+  const lines = [];
   if (byStage.retrieval !== undefined) {
     const pass = byStage.retrieval < 200;
-    target.innerHTML =
+    lines.push(
       `retrieval (chunking + vector search): <strong class="${pass ? "pass" : "fail"}">` +
       `${byStage.retrieval.toFixed(1)} ms — ${pass ? "under" : "over"} the 200ms target` +
-      `${pass ? " ✓" : " ✗"}</strong>`;
+      `${pass ? " ✓" : " ✗"}</strong>`
+    );
   } else {
-    target.textContent = "retrieval was skipped for this query (blocked earlier in the pipeline).";
+    lines.push("retrieval was skipped for this query (blocked earlier in the pipeline).");
   }
+  if (byStage.generation_ttft !== undefined) {
+    const pass = byStage.generation_ttft < 200;
+    lines.push(
+      `generation, time to first token: <strong class="${pass ? "pass" : "fail"}">` +
+      `${byStage.generation_ttft.toFixed(1)} ms — ${pass ? "under" : "over"} the 200ms target` +
+      `${pass ? " ✓" : " ✗"}</strong> (full answer takes longer — see below; no hosted LLM completes a full answer in 200ms)`
+    );
+  }
+  target.innerHTML = lines.join("<br/>");
 
   const latencyList = document.getElementById("latencyList");
   latencyList.innerHTML = "";
-  const STAGE_LABEL = { stt: "speech-to-text (network)", retrieval: "chunking + vector retrieval", generation: "LLM generation (network)" };
-  timings.forEach((t) => {
+  const STAGE_LABEL = {
+    stt: "speech-to-text (network)",
+    retrieval: "chunking + vector retrieval",
+    generation_ttft: "↳ time to first token",
+    generation: "LLM generation, full answer (network)",
+  };
+  const ORDER = ["stt", "retrieval", "generation_ttft", "generation"];
+  ORDER.forEach((stage) => {
+    if (byStage[stage] === undefined) return;
     const li = document.createElement("li");
-    li.innerHTML = `<span class="dot-${t.stage}">${STAGE_LABEL[t.stage] || t.stage}</span><span>${t.ms.toFixed(1)} ms</span>`;
+    li.innerHTML = `<span class="dot-${stage}">${STAGE_LABEL[stage]}</span><span>${byStage[stage].toFixed(1)} ms</span>`;
     latencyList.appendChild(li);
   });
   const totalLi = document.createElement("li");
@@ -318,7 +341,8 @@ function renderStages(data) {
   }
 
   if (timings.generation !== undefined) {
-    set("generation", "active", `${timings.generation.toFixed(0)}ms`);
+    const ttftText = timings.generation_ttft !== undefined ? `${timings.generation_ttft.toFixed(0)}ms→1st tok` : `${timings.generation.toFixed(0)}ms`;
+    set("generation", "active", ttftText);
   } else {
     set("generation", "skipped", "—");
   }

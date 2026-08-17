@@ -7,6 +7,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
+# CPU-only torch build explicitly -- pip's default wheel bundles CUDA, which
+# is ~2GB+ and useless on any free-tier host (no GPU anyway). This alone cuts
+# the image and build time roughly in half.
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 

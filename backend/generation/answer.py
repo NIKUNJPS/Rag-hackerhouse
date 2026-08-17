@@ -1,4 +1,4 @@
-from backend.generation.llm_client import generate
+from backend.generation.llm_client import generate, generate_stream
 
 SYSTEM_PROMPT = (
     "You answer questions using ONLY the context passages provided below. "
@@ -23,4 +23,15 @@ def generate_answer(query: str, chunks: list[dict]) -> str:
     if not chunks:
         return "I don't have enough information in the dataset to answer that."
     prompt = build_prompt(query, chunks)
-    return generate(prompt, system=SYSTEM_PROMPT, max_tokens=180)
+    return generate(prompt, system=SYSTEM_PROMPT, max_tokens=220)
+
+
+def generate_answer_stream(query: str, chunks: list[dict]):
+    """Same prompt as generate_answer, but yields text chunks -- lets the
+    orchestrator measure time-to-first-token separately from total time."""
+    if not chunks:
+        def _empty():
+            yield "I don't have enough information in the dataset to answer that."
+        return _empty()
+    prompt = build_prompt(query, chunks)
+    return generate_stream(prompt, system=SYSTEM_PROMPT, max_tokens=180)

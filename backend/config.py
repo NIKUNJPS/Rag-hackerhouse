@@ -12,8 +12,11 @@ class Settings:
 
     # LLM (answer generation)
     LLM_PROVIDER = os.getenv("LLM_PROVIDER", "groq")  # groq | openai | anthropic
+    # Used automatically if LLM_PROVIDER fails before producing any output (e.g.
+    # Groq's free-tier rate limit under a rapid eval loop) -- see llm_client.py.
+    LLM_FALLBACK_PROVIDER = os.getenv("LLM_FALLBACK_PROVIDER", "anthropic")
     GROQ_API_KEY = os.getenv("GROQ_API_KEY", "")
-    GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.1-8b-instant")
+    GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-20b")
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
     OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
     ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
